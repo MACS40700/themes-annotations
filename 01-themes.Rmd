@@ -1,0 +1,107 @@
+---
+title: "Creating custom themes"
+output: html_document
+---
+
+```{r opts}
+knitr::opts_chunk$set(
+  fig.width = 8, fig.asp = 0.618,
+  fig.retina = 2, dpi = 150
+)
+```
+
+```{r packages}
+library(tidyverse)
+library(here)
+library(gapminder)  # For gapminder data
+library(colorspace) # For color scales
+library(scales)     # For improved labels
+```
+```{r example-palettes}
+hcl_palettes(plot = TRUE)
+
+```
+
+# Basic plot
+
+```{r basic-plot}
+gapminder_filtered <- gapminder %>% 
+  filter(year > 2000)
+
+base_plot <- ggplot(data = gapminder_filtered,
+                    mapping = aes(x = gdpPercap, y = lifeExp, 
+                                  color = continent, size = pop)) +
+  geom_point() +
+  # Use dollars, and get rid of the cents part (i.e. $300 instead of $300.00)
+  scale_x_log10(labels = dollar_format(accuracy = 1)) +
+  # Format with commas
+  scale_size_continuous(labels = comma) +
+  # Use dark 3
+  scale_color_discrete_qualitative(palette = "Cold") + #is this a good choice or not???
+  labs(x = "GDP per capita", y = "Life expectancy",
+       color = "Continent", size = "Population",
+       title = "Here's a cool title",
+       subtitle = "And here's a neat subtitle",
+       caption = "Source: The Gapminder Project") +
+  facet_wrap(vars(year))
+
+base_plot
+```
+
+
+
+## Apply it to a different plot
+
+```{r penguins-example}
+library(palmerpenguins)
+
+penguins_example <- ggplot(data = drop_na(penguins, sex), 
+                      mapping = aes(x = bill_length_mm, y = body_mass_g, color = str_to_title(sex))) +
+  geom_point(size = 2, alpha = 0.7) + 
+  scale_color_discrete_qualitative(palette = "Harmonic") +
+  scale_y_continuous(labels = label_comma()) +
+  facet_wrap(vars(species)) +
+  labs(x = "Bill length (mm)", y = "Body mass (g)", color = "Sex",
+       title = "Gentoo penguins are the largest",
+       subtitle = "But females are typically smaller than males",
+       caption = "Here's a caption") + 
+  theme_bw()
+
+penguins_example
+```
+
+## Now with a sequential color
+Thoughts on use of color? What about the color choice? 
+
+```{r penguins-example-seq}
+
+penguins_example <- ggplot(data = drop_na(penguins, sex), 
+                      mapping = aes(x = bill_length_mm, y = body_mass_g, color = body_mass_g)) +
+  geom_point(size = 2, alpha = 0.7) + 
+  scale_color_continuous_sequential(palette = "Grays") +
+  scale_y_continuous(labels = label_comma()) +
+  facet_wrap(vars(species)) +
+  labs(x = "Bill length (mm)", y = "Body mass (g)", color = "Sex",
+       title = "Gentoo penguins are the largest",
+       subtitle = "But females are typically smaller than males",
+       caption = "Here's a caption") + 
+  theme_bw()
+
+penguins_example
+```
+
+# SOLVE THAT PROBLEM! What is happening here???
+
+```{r}
+ggplot(data = drop_na(penguins, sex), 
+                      mapping = aes(x = bill_length_mm, y = body_mass_g, shape = str_to_title(sex))) +
+  geom_point(aes(fill = body_mass_g), size = 2, alpha = 0.8, pch = 21) + 
+  scale_fill_gradient2(low = "black", mid = "gray10", high = "white") +
+  scale_y_continuous(labels = label_comma()) +
+  facet_wrap(vars(species)) +
+  labs(x = "Bill length (mm)", y = "Body mass (g)", color = "Body Mass",
+       title = "Gentoo penguins are the largest",
+       subtitle = "But females are typically smaller than males",
+       caption = "Here's a caption") + 
+  theme_bw()
+```
