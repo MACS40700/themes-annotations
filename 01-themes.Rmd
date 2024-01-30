@@ -16,6 +16,7 @@ library(here)
 library(gapminder)  # For gapminder data
 library(colorspace) # For color scales
 library(scales)     # For improved labels
+library(taylor)
 ```
 ```{r example-palettes}
 hcl_palettes(plot = TRUE)
@@ -104,4 +105,19 @@ ggplot(data = drop_na(penguins, sex),
        subtitle = "But females are typically smaller than males",
        caption = "Here's a caption") + 
   theme_bw()
+```
+
+```{r taylor}
+midnights <- taylor_album_songs %>% 
+  filter(!is.na(tempo) & album_name == "Midnights") %>% 
+  mutate(track_name = factor(track_name))
+
+m_plot <- ggplot(midnights, aes(x = tempo, y = track_name, fill = track_name)) +
+  geom_col(show.legend = FALSE) +
+  expand_limits(x = c(0, 1)) +
+  labs(y = NULL) +
+  theme_minimal() +
+  scale_fill_taylor_d(album = "Midnights")
+
+m_plot
 ```
